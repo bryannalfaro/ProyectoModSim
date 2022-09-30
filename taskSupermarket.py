@@ -2,6 +2,7 @@ import math
 from re import A
 import numpy as np
 import random
+from matplotlib import pyplot as plt
 
 #Based on Sheldon Ross, Simulation, 5th Edition.
 #Referencia: Miniproyecto 4 ambos grupos
@@ -16,8 +17,8 @@ Oscar Saravia
 Proyecto 1
 """
 
-#Servidores
-capacity_supermarket = 10
+#Cajas
+capacity_supermarket = 20
 clients_per_second_super = 6000/60
 checkout_amount_super = 15
 
@@ -42,13 +43,13 @@ for i in range(checkout_amount_super):
 
 td = math.inf
 
-#Customers en un servidor especifico
-system_customers_servers = np.zeros(checkout_amount_super)
+#Customers en una caja especifica
+system_customers_super = np.zeros(checkout_amount_super)
 
-#Cantidad de clientes servidos por servidor
-served_customers_servers = np.zeros(checkout_amount_super)
+#Cantidad de clientes servidos por caja
+served_customers_super = np.zeros(checkout_amount_super)
 
-#Completition time by server
+#Completition time by checkout
 completition_time_departures = []
 #Fill array with inf
 for i in range(checkout_amount_super):
@@ -57,18 +58,18 @@ for i in range(checkout_amount_super):
 #Tiempos en cola por cliente
 queue_time = {}
 
-#Fill queue_time with every server.
+#Fill queue_time with every checkout.
 for i in range(checkout_amount_super):
     queue_time[i] = {}
 
 #Salidas de cola por cliente
 queue_departures = {}
 
-#Fill queue_departures with every server.
+#Fill queue_departures with every checkout.
 for i in range(checkout_amount_super):
     queue_departures[i] = {}
 
-T = 10 #Una hora de ejecucion
+T = 60 #Una hora de ejecucion
 while t <= T or n>0:
     #Caso 1
     if ta <= min(completition_time_departures) and ta <= T:
@@ -79,11 +80,11 @@ while t <= T or n>0:
         n += 1
         ta = poisson_generation(t, clients_per_second_super) #Se genera la proxima llegada
 
-        #Verificar en cada servidor cual esta libre
+        #Verificar en cada checkout cual esta libre
         flag = False
         for i in range(checkout_amount_super):
-            if system_customers_servers[i] == 0:
-                system_customers_servers[i] = na
+            if system_customers_super[i] == 0:
+                system_customers_super[i] = na
 
                 #Generar tiempo de servicio
                 Y = random.expovariate(capacity_supermarket)
@@ -93,8 +94,8 @@ while t <= T or n>0:
                 break
 
         if flag == False:
-            #Si no hay servidores libres
-            #Se encola el cliente en el servidor con menor numero de clientes en cola
+            #Si no hay checkoutes libres
+            #Se encola el cliente en el checkout con menor numero de clientes en cola
             #si hay empate, se hace random.
             min_queue = 0
             min_queue_size = len(queue_time[0])
@@ -122,35 +123,35 @@ while t <= T or n>0:
         nd += 1
         n -= 1
 
-        #Se aumenta la cantidad de clientes servidos por este servidor (index)
-        served_customers_servers[index] += 1
+        #Se aumenta la cantidad de clientes servidos por este checkout (index)
+        served_customers_super[index] += 1
 
         #Guardar la salida
         departure_time[nd] = t
 
         #Verificar si hay clientes en cola
         if n >= checkout_amount_super:
-            m_val = max(system_customers_servers)
-            system_customers_servers[index] = m_val + 1
+            m_val = max(system_customers_super)
+            system_customers_super[index] = m_val + 1
 
             #Generar tiempo de servicio
             Y = random.expovariate(capacity_supermarket)
             completition_time_departures[index] = t + Y
             occupied_time_list[index] += Y
 
-            #Search for server of nd
+            #Search for checkout of nd
             for i in range(checkout_amount_super):
                 if nd in queue_time[i].keys():
                     queue_departures[i][nd] = t
                     break
         else:
-            #Search for server of nd
+            #Search for checkout of nd
             for i in range(checkout_amount_super):
                 if nd in queue_time[i].keys():
                     queue_departures[i][nd] = t
                     break
             completition_time_departures[index] = math.inf
-            system_customers_servers[index] = 0
+            system_customers_super[index] = 0
 
 #Cuestionamientos
 
@@ -163,7 +164,7 @@ for i in range(checkout_amount_super):
 
     for j in queue_time[i]:
         value_total += (queue_departures[i][j] - queue_time[i][j])
-    print('Tiempo total de solicitudes en cola del servidor', i+1, '> ',value_total)
+    print('Tiempo total de solicitudes en cola de la caja', i+1, '> ',value_total)
 
     average_queue = 0
     if len(queue_time[i]) == 0:
@@ -171,15 +172,40 @@ for i in range(checkout_amount_super):
     else:
         average_queue = value_total / len(queue_time[i])
 
-    print('Tiempo promedio de solicitudes en cola del servidor', i+1, '> ',average_queue,'\n')
+    print('Tiempo promedio de solicitudes en cola de la caja', i+1, '> ',average_queue,'\n')
 
 
 # Tarea 2 Calcule el número de cliente en la cola
 
 for i in range(checkout_amount_super):
-    print('Cantidad de solicitudes en cola del servidor', i+1, '> ',len(queue_time[i]))
+    print('Cantidad de solicitudes en cola de la caja', i+1, '> ',len(queue_time[i]))
 
 #Tarea 3 Para este punto considere los clientes atendidos por cada cajero dividido el número de clientes
 #total
 for i in range(checkout_amount_super):
-    print('Porcentaje de solicitudes atendidas por el servidor', i+1, '> ',(served_customers_servers[i]/na)*100,'%')
+    print('Porcentaje de solicitudes atendidas por la caja', i+1, '> ',(served_customers_super[i]/na)*100,'%')
+
+
+#EXTRA
+#Graficando cantidad de solicitudes en cola de la caja
+list_val = []
+for i in range(checkout_amount_super):
+    if (i+1)*len(queue_time[i]) > 0:
+        for j in range(len(queue_time[i])):
+            list_val.append(i+1)
+plt.hist(list_val, bins=checkout_amount_super)
+plt.title('Cantidad de solicitudes en cola de la caja')
+plt.xlabel('Caja')
+plt.ylabel('Cantidad de solicitudes')
+plt.show()
+
+#Plotting percentage of served customers
+list_val = []
+for i in range(checkout_amount_super):
+    list_val.append((served_customers_super[i]/na)*100)
+
+plt.bar(range(1,checkout_amount_super+1), list_val)
+plt.title('Porcentaje de solicitudes atendidas por la caja')
+plt.xlabel('Caja')
+plt.ylabel('Porcentaje de solicitudes')
+plt.show()
