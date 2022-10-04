@@ -10,9 +10,9 @@ from matplotlib import pyplot as plt
 Universidad del Valle de Guatemala
 Bryann Alfaro 19372
 Diego Arredondo 19422
-Raul Jimenez
-Donaldo Garcia
-Oscar Saravia
+Raul Jimenez 19017
+Donaldo Garcia 19683
+Oscar Saravia 19322
 
 Proyecto 1
 """
@@ -36,7 +36,7 @@ departure_time = {}
 
 #Variable para almacenar el tiempo ocupado
 occupied_time_list = []
-#Fill occupied_time
+#Llenar el tiempo ocupado con 0
 for i in range(checkout_amount_super):
     occupied_time_list.append(0)
 
@@ -49,27 +49,27 @@ system_customers_super = np.zeros(checkout_amount_super)
 #Cantidad de clientes servidos por caja
 served_customers_super = np.zeros(checkout_amount_super)
 
-#Completition time by checkout
+#Tiempo de completacion por caja
 completition_time_departures = []
-#Fill array with inf
+#Llenar valores con inf
 for i in range(checkout_amount_super):
     completition_time_departures.append(math.inf)
 
 #Tiempos en cola por cliente
 queue_time = {}
 
-#Fill queue_time with every checkout.
+#Llenar la cola para cada cajero
 for i in range(checkout_amount_super):
     queue_time[i] = {}
 
 #Salidas de cola por cliente
 queue_departures = {}
 
-#Fill queue_departures with every checkout.
+#Llenar la cola de salidas para cada cajero
 for i in range(checkout_amount_super):
     queue_departures[i] = {}
 
-T = 60 #Una hora de ejecucion
+T = 3600 #Una hora de ejecucion
 while t <= T or n>0:
     #Caso 1
     if ta <= min(completition_time_departures) and ta <= T:
@@ -139,13 +139,13 @@ while t <= T or n>0:
             completition_time_departures[index] = t + Y
             occupied_time_list[index] += Y
 
-            #Search for checkout of nd
+            #Buscar por la caja de nd
             for i in range(checkout_amount_super):
                 if nd in queue_time[i].keys():
                     queue_departures[i][nd] = t
                     break
         else:
-            #Search for checkout of nd
+            #Buscar por la caja de nd
             for i in range(checkout_amount_super):
                 if nd in queue_time[i].keys():
                     queue_departures[i][nd] = t
@@ -180,7 +180,7 @@ for i in range(checkout_amount_super):
 for i in range(checkout_amount_super):
     print('Cantidad de solicitudes en cola de la caja', i+1, '> ',len(queue_time[i]))
 
-#Tarea 3 Para este punto considere los clientes atendidos por cada cajero dividido el número de clientes
+#Tarea 3 Grado de utilizacion.  Para este punto considere los clientes atendidos por cada cajero dividido el número de clientes
 #total
 for i in range(checkout_amount_super):
     print('Porcentaje de solicitudes atendidas por la caja', i+1, '> ',(served_customers_super[i]/na)*100,'%')
